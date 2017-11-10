@@ -57,6 +57,109 @@ void fcfs(){
  * rr() - Simulates the round robin CPU scheduling method
  */
 void rr(long quantum){
+    #include <stdio.h>
+#include <stdbool.h>
+
+/*findingWaitTime will find the wait time for all processes*/
+void findWaitTime(int processes[], int n, int burstTimes[], int waitTime[], int quantum)
+{
+    //Creating arry to hold burst times
+    int remainingBurstTime[n];
+    for(int i =0; i < n; i++)
+    {
+        remainingBurstTime [i] = burstTimes [i];
+    }
+    
+    int currentTime = 0; //current time
+    int done =1;
+    //executes processes in round robin manner
+    while(done)
+    {
+       //int done = 1;
+        
+        //will execxute all processes one by one repeatedly 
+        for(int i=0; i < n; i++)
+        {
+            
+            //If burst time of process is greater than 0, then go ahead
+            if(remainingBurstTime[i] > quantum)
+            {
+                    done = 0;
+                    //Increase the value of t(which shows how much time a process has bee executed)
+                    currentTime = currentTime + quantum;
+                    
+                    //Decrease the burst_time of the current process by a quantum
+                    remainingBurstTime[i];
+                
+            }
+            else//If the burst time is smaller or equal to the quantum. Last cycle for this process
+            {
+                //Increase the value of t(which shows the value of how much time a process has been executed)
+                currentTime = currentTime + remainingBurstTime[currentTime];
+                
+                //waiting time = (current time) - (time used by "this" process)
+                waitTime[i] = currentTime - burstTimes[i];
+                
+                //As the procees gets fully executed make its remaning burst time = 0
+                remainingBurstTime [i] = 0;
+            }
+        }
+        if(done == 1)
+        {
+            break;
+        }
+    }
+}
+
+/*findTurnAroundTime will find the turn around time of all process */
+void findTurnAroundTime(int processes[], int n, int burstTime[], int waitTime[], int trunAroundTime[])
+{
+    //finding the turn around time = (burtTime) + (waitTime)
+    for(int i = 0; i < n; i++)
+    {
+        trunAroundTime[i] = burstTime[i] + waitTime[i];
+    }
+}
+
+/*findAvgTime will find the average time of all processes*/
+void findingAvgTime(int processes[], int n, int burstTime[], int quantum)
+{
+    int waitTime [n], turnAroundTime[n], totalWaitTime = 0, totalTurnAroundTime = 0;
+    
+    //Finding the waiting time for all processes 
+    findWaitTime(processes, n, burstTime, waitTime, quantum);
+    
+    //Finding trun around time for all processes 
+    findTurnAroundTime(processes, n, burstTime, waitTime, turnAroundTime);
+    
+    //Display processes along with all details
+    for(int i =0; i<n; i++)
+    {
+        totalWaitTime       = totalWaitTime + waitTime[i];
+        totalTurnAroundTime = totalTurnAroundTime + turnAroundTime[i];
+        printf("Processes %d | Burst Time %d | Waiting Time %d | Turn Around Time %d\n ", processes[i], burstTime[i], waitTime[i], turnAroundTime[i]  );
+        
+    }
+    float avgWaitTime       = (float) totalWaitTime/(float) n;
+    float avgTurnAroundTime = (float) totalTurnAroundTime/ (float) n;
+    printf("The Average Waiting time:     %f\n" , avgWaitTime);
+    printf("The Average Turn Around Time: %f\n" , avgTurnAroundTime);
+}
+int main()
+{
+    // process id's
+    int processes[] = { 1, 2, 3};
+    int n = sizeof processes / sizeof processes[0];
+ 
+    // Burst time of all processes
+    int burst_time[] = {10, 5, 8};
+ 
+    // Time quantum
+    int quantum = 2;
+    findingAvgTime(processes, n, burst_time, quantum);
+    return 0;
+}
+
     
 }
 /**
