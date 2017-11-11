@@ -166,5 +166,56 @@ int main()
  * psjf() - Simulates the premptive shortest job first CPU scheduling method
  */
 void psjf(){
+    #include <stdio.h>
+
+int main()
+{
+    //Declaring all variables needed for the caculations 
+    int arrivalTime[10], burstTime [10], temp[10];
+    int i, smallestProcess, count =0, time, limit;
+    double waitTime =0, turnAroundTime =0,end;
+    float avgWaitingTime, avgTurnAroundTime;
+    
+    //Getting user input 
+    printf("\n Enter the Total Number of Processes:\t");
+    scanf("%d", &limit);
+    printf("\nEnter Details of %d Processes\n", limit);
+    for(i =0; i<limit; i++)
+    {
+        printf("\nEnter Arrival Time:\t");
+        scanf("%d", &arrivalTime[i]);
+        printf("Enter Burst Time:\t");
+        scanf("%d", &burstTime[i]);
+        temp[i] = burstTime[i];
+    }
+    
+    //Executing psjf
+    burstTime[9] = 9999;
+for(time =0; count != limit; time++)
+{
+    smallestProcess =9;
+    for(i=0; i<limit; i++)
+    {
+        if(arrivalTime[i] <= time && burstTime[i] < burstTime[smallestProcess] && burstTime[i]>0)
+        {
+            smallestProcess = i;
+        }
+    }
+    burstTime[smallestProcess]--;
+    if(burstTime[smallestProcess] == 0)
+    {
+        count++;
+        end = time +1;
+        waitTime = waitTime + end - arrivalTime[smallestProcess] - temp[smallestProcess];
+        turnAroundTime = turnAroundTime + end - arrivalTime[smallestProcess];
+    }
+}
+//figuring out average wait times and turn around time
+avgWaitingTime = waitTime / limit;
+avgTurnAroundTime = turnAroundTime / limit;
+printf("\n\nAverage Waiting Timme: \t%lf\n", avgWaitingTime);
+printf("Average Turnaround Time: \t%lf\n", avgTurnAroundTime);
+return 0;
+}
     
 }
