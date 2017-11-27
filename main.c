@@ -10,37 +10,55 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdbool.h>
 
 struct process {
     int id;
     int cpuTime;
     int arrTime;
+    int waittime;
 };
 
-void fcfs(void);
-void rr(long quantum);
-void psjf(void);
+void fcfs(int numOfProc, struct process proc[]);
+void rr(long quantum, int numOfProc, struct process proc[]);
+void psjf(int numOfProc, struct process proc[]);
+
+int TIME = 0;
 
 int main(int argc, const char * argv[]) {
    
     char *p;
     long quantum = strtol(argv[2], &p, 10);
+    int i = 0;
     int c = 0;
+    int totalTime = 0;
     struct process proc[32];
     
+    printf("Please enter process data (Enter three 0's to finish): \n");
     do{
-        
-        c++;
-    } while(c > 10);
+        printf("PID: ");
+        scanf("%d", &proc[i].id);
+        printf("Process Time: ");
+        scanf("%d", &proc[i].cpuTime);
+        printf("Arival Time: ");
+        scanf("%d", &proc[i].arrTime);
+        totalTime = proc[i].cpuTime;
+        if((proc[i].arrTime == 0) && (proc[i].cpuTime == 0) && (proc[i].id == 0)){
+            c = 1;
+        }
+        i++;
+    } while(c != 1);
     
     if(strcmp(argv[1], "FCFS") == 0){
-        fcfs();
+        fcfs(i, proc);
     } else if((strcmp(argv[1], "RR") == 0) && (quantum > 0)){
-        
+        rr(quantum, i, proc);
     } else if(strcmp(argv[1], "PSJF") == 0){
-        
+        psjf(i, proc);
     } else {
         printf("Error: Incorrect arguements.  Scheduler [FCFS|RR|PSJF] Quantum > 0\n");
+        exit(-1);
     }
     
     return 0;
@@ -49,127 +67,79 @@ int main(int argc, const char * argv[]) {
 /**
  * fcfs() - Simulates the first come first serve CPU scheduling method
  */
-void fcfs(){
-    printf("FCFS");
+void fcfs(int numOfProc, struct process proc[]){
+
+    double avgWait = 0;
+    int running = 0, totalTime = 0;
+	printf("\nSimulation starting:\n");
+    for(int i = 0; i < (numOfProc - 1); i++){
+		printf("%d %d arriving\n%d %d running\n", proc[i].arrTime, proc[i].id, TIME, proc[i].id);
+        proc[i].waittime = TIME - proc[i].arrTime;
+        TIME += proc[i].cpuTime;
+        avgWait += proc[i].waittime;
+    }
+    avgWait = avgWait / (numOfProc - 1);
+    printf("Average waiting time: %f\nAverage response time: \nAverage CPU usage: \n", avgWait);
 }
 
 /**
  * rr() - Simulates the round robin CPU scheduling method
  */
-void rr(long quantum){
-    #include <stdio.h>
-#include <stdbool.h>
+void rr(long quantum, int numOfProc, struct process proc[]){
 
-/*findingWaitTime will find the wait time for all processes*/
-void findWaitTime(int processes[], int n, int burstTimes[], int waitTime[], int quantum)
-{
-    //Creating arry to hold burst times
-    int remainingBurstTime[n];
-    for(int i =0; i < n; i++)
-    {
-        remainingBurstTime [i] = burstTimes [i];
+    int turnAroundTime[(numOfProc - 1)], rear = (numOfProc - 1);
+    double avgWait = 0, avgTurnArnd = 0;
+    int remainder = 0, count = 0;
+    struct process queue[128];
+
+    printf("\nSimulation starting:\n");
+    for(int i = 0; i < (numOfProc - 1); i++){
+        queue[i] = proc[i];
     }
-    
-    int currentTime = 0; //current time
-    int done =1;
+    for(int i = 0; i <= 128; i++){
+        if(queue[i].cpuTime > quantum)
+        {
+	    	rear++;
+            queue[i].cpuTime = (int) quantum;
+            remainder = proc[i].cpuTime - (int) quantum;
+            queue[rear].cpuTime = remainder;
+			queue[rear].id = proc[i].id;
+            count++;
+        } else {
+            queue[i].cpuTime = proc[i].cpuTime;
+        }
+        count++;
+    }
+    for(int i = 0; i < numOfProc; i++){
+         printf("Queue: %d", queue[i].cpuTime); 
+    }
     //executes processes in round robin manner
-    while(done)
-    {
-       //int done = 1;
-        
-        //will execxute all processes one by one repeatedly 
-        for(int i=0; i < n; i++)
+    //will execxute all processes one by one repeatedly
+        for(int i=0; i < count; i++)
         {
-            
-            //If burst time of process is greater than 0, then go ahead
-            if(remainingBurstTime[i] > quantum)
-            {
-                    done = 0;
-                    //Increase the value of t(which shows how much time a process has bee executed)
-                    currentTime = currentTime + quantum;
-                    
-                    //Decrease the burst_time of the current process by a quantum
-                    remainingBurstTime[i];
-                
-            }
-            else//If the burst time is smaller or equal to the quantum. Last cycle for this process
-            {
-                //Increase the value of t(which shows the value of how much time a process has been executed)
-                currentTime = currentTime + remainingBurstTime[currentTime];
-                
-                //waiting time = (current time) - (time used by "this" process)
-                waitTime[i] = currentTime - burstTimes[i];
-                
-                //As the procees gets fully executed make its remaning burst time = 0
-                remainingBurstTime [i] = 0;
-            }
+            queue[i].waittime = TIME - queue[i].arrTime;
+            TIME += queue[i].cpuTime;
+            //Increase the value of t(which shows the value of how much time a process has been executed)
+            //waiting time = (current time) - (time used by "this" process)
+            printf("Wait time: %d\nCurrent time: %d\nCount: %d\n", queue[i].waittime, TIME, count);
+            avgWait += queue[i].waittime;
+            //Finding the turn around time = (burtTime) + (waitTime)
+            turnAroundTime[i] = queue[i].cpuTime + queue[i].waittime;
+            avgTurnArnd += turnAroundTime[i];
         }
-        if(done == 1)
-        {
-            break;
-        }
-    }
+    avgWait = avgWait / (numOfProc - 1);
+    avgTurnArnd = avgTurnArnd / numOfProc;
+    printf("Average waiting time: %f\nAverage response time: \nAverage CPU usage: \n", avgWait);
 }
 
-/*findTurnAroundTime will find the turn around time of all process */
-void findTurnAroundTime(int processes[], int n, int burstTime[], int waitTime[], int trunAroundTime[])
-{
-    //finding the turn around time = (burtTime) + (waitTime)
-    for(int i = 0; i < n; i++)
-    {
-        trunAroundTime[i] = burstTime[i] + waitTime[i];
-    }
-}
-
-/*findAvgTime will find the average time of all processes*/
-void findingAvgTime(int processes[], int n, int burstTime[], int quantum)
-{
-    int waitTime [n], turnAroundTime[n], totalWaitTime = 0, totalTurnAroundTime = 0;
-    
-    //Finding the waiting time for all processes 
-    findWaitTime(processes, n, burstTime, waitTime, quantum);
-    
-    //Finding trun around time for all processes 
-    findTurnAroundTime(processes, n, burstTime, waitTime, turnAroundTime);
-    
-    //Display processes along with all details
-    for(int i =0; i<n; i++)
-    {
-        totalWaitTime       = totalWaitTime + waitTime[i];
-        totalTurnAroundTime = totalTurnAroundTime + turnAroundTime[i];
-        printf("Processes %d | Burst Time %d | Waiting Time %d | Turn Around Time %d\n ", processes[i], burstTime[i], waitTime[i], turnAroundTime[i]  );
-        
-    }
-    float avgWaitTime       = (float) totalWaitTime/(float) n;
-    float avgTurnAroundTime = (float) totalTurnAroundTime/ (float) n;
-    printf("The Average Waiting time:     %f\n" , avgWaitTime);
-    printf("The Average Turn Around Time: %f\n" , avgTurnAroundTime);
-}
-int main()
-{
-    // process id's
-    int processes[] = { 1, 2, 3};
-    int n = sizeof processes / sizeof processes[0];
- 
-    // Burst time of all processes
-    int burst_time[] = {10, 5, 8};
- 
-    // Time quantum
-    int quantum = 2;
-    findingAvgTime(processes, n, burst_time, quantum);
-    return 0;
-}
-
-    
-}
 /**
  * psjf() - Simulates the premptive shortest job first CPU scheduling method
  */
-void psjf(){
+void psjf(int numOfProc, struct process proc[]){
         //PSJF from the website!!!    
       int arrival_time[numOfProc], burst_time[numOfProc], temp[numOfProc];
       int i, smallest;
-      int count = 0 
+      int count = 0; 
       int time;//, limit;
       int limit = numOfProc;
       double wait_time = 0, turnaround_time = 0, end;
@@ -211,9 +181,7 @@ void psjf(){
       average_turnaround_time = turnaround_time / limit;
       printf("\n\nAverage Waiting Time:\t%lf\n", average_waiting_time);
       printf("Average Turnaround Time:\t%lf\n", average_turnaround_time);
-     // return 0;
-    //return 0;
-}
-}
     
 }
+
+
