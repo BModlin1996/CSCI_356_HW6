@@ -166,56 +166,54 @@ int main()
  * psjf() - Simulates the premptive shortest job first CPU scheduling method
  */
 void psjf(){
-    #include <stdio.h>
-
-int main()
-{
-    //Declaring all variables needed for the caculations 
-    int arrivalTime[10], burstTime [10], temp[10];
-    int i, smallestProcess, count =0, time, limit;
-    double waitTime =0, turnAroundTime =0,end;
-    float avgWaitingTime, avgTurnAroundTime;
-    
-    //Getting user input 
-    printf("\n Enter the Total Number of Processes:\t");
-    scanf("%d", &limit);
-    printf("\nEnter Details of %d Processes\n", limit);
-    for(i =0; i<limit; i++)
-    {
-        printf("\nEnter Arrival Time:\t");
-        scanf("%d", &arrivalTime[i]);
-        printf("Enter Burst Time:\t");
-        scanf("%d", &burstTime[i]);
-        temp[i] = burstTime[i];
-    }
-    
-    //Executing psjf
-    burstTime[9] = 9999;
-for(time =0; count != limit; time++)
-{
-    smallestProcess =9;
-    for(i=0; i<limit; i++)
-    {
-        if(arrivalTime[i] <= time && burstTime[i] < burstTime[smallestProcess] && burstTime[i]>0)
-        {
-            smallestProcess = i;
-        }
-    }
-    burstTime[smallestProcess]--;
-    if(burstTime[smallestProcess] == 0)
-    {
-        count++;
-        end = time +1;
-        waitTime = waitTime + end - arrivalTime[smallestProcess] - temp[smallestProcess];
-        turnAroundTime = turnAroundTime + end - arrivalTime[smallestProcess];
-    }
+        //PSJF from the website!!!    
+      int arrival_time[numOfProc], burst_time[numOfProc], temp[numOfProc];
+      int i, smallest;
+      int count = 0 
+      int time;//, limit;
+      int limit = numOfProc;
+      double wait_time = 0, turnaround_time = 0, end;
+      float average_waiting_time, average_turnaround_time;
+      //printf("\nEnter the Total Number of Processes:\t");
+      //scanf("%d", &limit); 
+      //printf("\nEnter Details of %d Processes\n", limit);
+      for(i = 0; i < limit; i++)
+      {
+            //printf("\nEnter Arrival Time:\t");
+            //scanf("%d", &arrival_time[i]);
+            //printf("Enter Burst Time:\t");
+            //scanf("%d", &burst_time[i]); 
+            //temp[i] = burst_time[i];
+            arrival_time[i] = proc[i].arrTime;
+            burst_time[i] = proc[i].cpuTime;
+      }
+      burst_time[9] = 9999;  
+      for(time = 0; count != limit; time++)
+      {
+            smallest = 9;
+            for(i = 0; i < limit; i++)
+            {
+                  if(arrival_time[i] <= time && burst_time[i] < burst_time[smallest] && burst_time[i] > 0)
+                  {
+                        smallest = i;
+                  }
+            }
+            burst_time[smallest]--;
+            if(burst_time[smallest] == 0)
+            {
+                  count++;
+                  end = time + 1;
+                  wait_time = wait_time + end - arrival_time[smallest] - temp[smallest];
+                  turnaround_time = turnaround_time + end - arrival_time[smallest];
+            }
+      }
+      average_waiting_time = wait_time / limit; 
+      average_turnaround_time = turnaround_time / limit;
+      printf("\n\nAverage Waiting Time:\t%lf\n", average_waiting_time);
+      printf("Average Turnaround Time:\t%lf\n", average_turnaround_time);
+     // return 0;
+    //return 0;
 }
-//figuring out average wait times and turn around time
-avgWaitingTime = waitTime / limit;
-avgTurnAroundTime = turnAroundTime / limit;
-printf("\n\nAverage Waiting Timme: \t%lf\n", avgWaitingTime);
-printf("Average Turnaround Time: \t%lf\n", avgTurnAroundTime);
-return 0;
 }
     
 }
