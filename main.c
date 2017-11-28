@@ -146,6 +146,7 @@ void rr(long quantum, int numOfProc, struct process proc[]){
       average_turnaround_time = turnaround_time * 1.0 / limit;
       printf("\n\nAverage Waiting Time:\t%f", average_wait_time); 
       printf("\nAvg Turnaround Time:\t%f\n", average_turnaround_time); 
+      printf("\n Avgerage reponse time is: %d\n", reponseTime(totalBurstTimes, wait_time,limit ));
      
     
 }
@@ -209,6 +210,11 @@ double cpuTime(int totalBurstTimes, int overAllTime)
     double cpuTime = totalBustTimes/ overAllTime;
     double ans     = cpuTime *100;
     return ans;
+}
+double responeTime(int totalBurstTimes, int totalWaitTimes, int totalNumberOfProcesses)
+{
+    double avgReponseTime = ((totalBurstTimes) + (totalWaitTimes))/ totalNumberOfProcesses;
+    return avgResponseTime;
 }
 }
 
