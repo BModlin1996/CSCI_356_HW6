@@ -162,6 +162,7 @@ void psjf(int numOfProc, struct process proc[]){
       int limit = numOfProc;
       double wait_time = 0, turnaround_time = 0, end;
       float average_waiting_time, average_turnaround_time;
+      double totalBurstTimes;
       //printf("\nEnter the Total Number of Processes:\t");
       //scanf("%d", &limit); 
       //printf("\nEnter Details of %d Processes\n", limit);
@@ -174,6 +175,7 @@ void psjf(int numOfProc, struct process proc[]){
             //temp[i] = burst_time[i];
             arrival_time[i] = proc[i].arrTime;
             burst_time[i] = proc[i].cpuTime;
+	    totalBurstTimes = totalBurstTimes + proc[i].cpuTime;
       }
       burst_time[9] = 9999;  
       for(time = 0; count != limit; time++)
@@ -199,7 +201,15 @@ void psjf(int numOfProc, struct process proc[]){
       average_turnaround_time = turnaround_time / limit;
       printf("\n\nAverage Waiting Time:\t%lf\n", average_waiting_time);
       printf("Average Turnaround Time:\t%lf\n", average_turnaround_time);
-    
+         printf("\nCpu usage time: %d\n", cpuTime(totalBurstTimes, TIME ));
+      //return 0; 
+}
+double cpuTime(int totalBurstTimes, int overAllTime)
+{
+    double cpuTime = totalBustTimes/ overAllTime;
+    double ans     = cpuTime *100;
+    return ans;
+}
 }
 
 
