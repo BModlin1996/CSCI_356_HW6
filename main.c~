@@ -1,12 +1,3 @@
-//
-//  main.c
-//  Homework 6
-//
-//  Created by Bailey Modlin, and Matthew Featherston on 11/7/17.
-//
-//  This program is designed to simulate thre CPU scheduling techniques (first come first serve, round robin, and preemptive shortest job first).
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -109,10 +100,12 @@ void rr(long quantum, int numOfProc, struct process proc[]){
 			totalBurstTimes += proc[i].cpuTime;
       } 
       //printf("\nEnter Time Quantum:\t"); 
-      //scanf("%d", &time_quantum); 
-      printf("\nProcess ID\t\tBurst Time\t Turnaround Time\t Waiting Time\n");
+      //scanf("%d", &time_quantum);
+      printf("\nStarting Simulation:");
+      //printf("\nProcess ID\t\tBurst Time\t Turnaround Time\t Waiting Time\n");
       for(total = 0, i = 0; x != 0;) 
       { 
+          printf("%d %d arriving\n%d %d running\n", proc[i].arrTime, proc[i].id, TIME, proc[i].id);
             if(temp[i] <= time_quantum && temp[i] > 0) 
             { 
                   total = total + temp[i]; 
@@ -149,7 +142,7 @@ void rr(long quantum, int numOfProc, struct process proc[]){
       average_turnaround_time = turnaround_time * 1.0 / limit;
       printf("\n\nAverage Waiting Time: %f\n", average_wait_time); 
       printf("Average reponse time is: %f\n", responeTime(totalBurstTimes, wait_time,limit ));
-	  //printf("CPU usage time: %f\n", cpuTime(totalBurstTimes, TIME )); 
+	  printf("CPU usage time: %f\n", cpuTime(totalBurstTimes, total )); 
 }
 
 /**
@@ -174,9 +167,10 @@ void psjf(int numOfProc, struct process proc[]){
       }
 
       burst_time[9] = 9999;
-  
+      printf("\nSimulation Starting:\n");
       for(TIME = 0; count != limit; TIME++)
       {
+          printf("%d %d arriving\n%d %d running\n", proc[i].arrTime, proc[i].id, TIME, proc[i].id);
             smallest = 9;
             for(i = 0; i < limit; i++)
             {
