@@ -55,7 +55,7 @@ int main(int argc, const char * argv[]) {
     } else if((strcmp(argv[1], "RR") == 0) && (quantum > 0)){
         rr(quantum, i, proc);
     } else if(strcmp(argv[1], "PSJF") == 0){
-        psjf(i, proc);
+       // psjf(i, proc);
     } else {
         printf("Error: Incorrect arguements.  Scheduler [FCFS|RR|PSJF] Quantum > 0\n");
         exit(-1);
@@ -69,16 +69,29 @@ int main(int argc, const char * argv[]) {
  */
 void fcfs(int numOfProc, struct process proc[]){
 
-    double avgWait = 0;
-    int running = 0, totalTime = 0;
-	printf("\nSimulation starting:\n");
+    double avgWait = 0, totalTime = 0;
+    bool running = false;
     for(int i = 0; i < (numOfProc - 1); i++){
-		printf("%d %d arriving\n%d %d running\n", proc[i].arrTime, proc[i].id, TIME, proc[i].id);
-        proc[i].waittime = TIME - proc[i].arrTime;
-        TIME += proc[i].cpuTime;
-        avgWait += proc[i].waittime;
+        totalTime += proc[i].cpuTime;
     }
-    avgWait = avgWait / (numOfProc - 1);
+    for(int i = 0; i < totalTime; i++){
+        if(i == proc[i].arrTime){
+            printf("%d %d arriving\n", proc[i].arrTime, proc[i].id);
+            if(!running){
+                running = true;
+                printf("%d %d running\n", i, proc[i].id);
+            } else if((running) && proc[i].cpuTime > 0){
+                running = false;
+            } else {
+                proc[i].cpuTime -= 1;
+            }
+            printf("%d %d running\n", TIME, proc[i].id);
+            proc[i].waittime = TIME - proc[i].arrTime;
+            TIME += proc[i].cpuTime;
+            avgWait += proc[i].waittime;
+        }
+    }
+    avgWait = avgWait / (numOfProc -1);
     printf("Average waiting time: %f\nAverage response time: \nAverage CPU usage: \n", avgWait);
 }
 
@@ -86,136 +99,76 @@ void fcfs(int numOfProc, struct process proc[]){
  * rr() - Simulates the round robin CPU scheduling method
  */
 void rr(long quantum, int numOfProc, struct process proc[]){
-	  int i, total = 0, x, counter = 0; 
-      int time_quantum = quantum; 
-      int limit = numOfProcesses;
-      int wait_time = 0, turnaround_time = 0, arrival_time[10], burst_time[10], temp[10]; 
-      float average_wait_time, average_turnaround_time;
-      //printf("\nEnter Total Number of Processes:\t"); 
-      //scanf("%d", &limit); 
-      x = limit; 
-      for(i = 0; i < limit; i++) 
-      {
-            //printf("\nEnter Details of Process[%d]\n", i + 1);
-            //printf("Arrival Time:\t");
-            //scanf("%d", &arrival_time[i]);
-            //printf("Burst Time:\t");
-            //scanf("%d", &burst_time[i]);
-            burst_time[i] = proc[i].cpuTime;
-            arrival_time[i] = proc[i].arrTime;
-            temp[i] = burst_time[i];
-      } 
-      //printf("\nEnter Time Quantum:\t"); 
-      //scanf("%d", &time_quantum); 
-      printf("\nProcess ID\t\tBurst Time\t Turnaround Time\t Waiting Time\n");
-      for(total = 0, i = 0; x != 0;) 
-      { 
-            if(temp[i] <= time_quantum && temp[i] > 0) 
-            { 
-                  total = total + temp[i]; 
-                  temp[i] = 0; 
-                  counter = 1; 
-            } 
-            else if(temp[i] > 0) 
-            { 
-                  temp[i] = temp[i] - time_quantum; 
-                  total = total + time_quantum; 
-            } 
-            if(temp[i] == 0 && counter == 1) 
-            { 
-                  x--; 
-                  printf("\nProcess[%d]\t\t%d\t\t %d\t\t\t %d", i + 1, burst_time[i], total - arrival_time[i], total - arrival_time[i] - burst_time[i]);
-                  wait_time = wait_time + total - arrival_time[i] - burst_time[i]; 
-                  turnaround_time = turnaround_time + total - arrival_time[i]; 
-                  counter = 0; 
-            } 
-            if(i == limit - 1) 
-            {
-                  i = 0; 
-            }
-            else if(arrival_time[i + 1] <= total) 
-            {
-                  i++;
-            }
-            else 
-            {
-                  i = 0;
-            }
-      } 
-      average_wait_time = wait_time * 1.0 / limit;
-      average_turnaround_time = turnaround_time * 1.0 / limit;
-      printf("\n\nAverage Waiting Time:\t%f", average_wait_time); 
-      printf("\nAvg Turnaround Time:\t%f\n", average_turnaround_time); 
-      printf("\n Avgerage reponse time is: %d\n", reponseTime(totalBurstTimes, wait_time,limit ));
-     
-    
+
+    int turnAroundTime[(numOfProc - 1)];
+    double avgWait = 0, avgTurnArnd = 0;
+    int remainder = 0, count = 0;
+    struct process queue[128];
+    for(int i = 0; i < (numOfProc - 1); i++){
+        queue[i] = proc[i];
+    }
+    for(int i = 0; i < (numOfProc - 1); i++){
+        if(queue[i].cpuTime > quantum)
+        {
+            queue[i].cpuTime = (int) quantum;
+            remainder = proc[i].cpuTime - (int) quantum;
+            queue[i + (numOfProc - 1)].cpuTime = remainder;
+            count++;
+        } else {
+            queue[i].cpuTime = proc[i].cpuTime;
+        }
+        count++;
+    }
+    //executes processes in round robin manner
+    //will execxute all processes one by one repeatedly
+        for(int i=0; i < count; i++)
+        {
+            queue[i].waittime = TIME - queue[i].arrTime;
+            TIME += queue[i].cpuTime;
+            //Increase the value of t(which shows the value of how much time a process has been executed)
+            //waiting time = (current time) - (time used by "this" process)
+            printf("Wait time: %d\nCurrent time: %d\n", queue[i].waittime, TIME);
+            avgWait += queue[i].waittime;
+            //Finding the turn around time = (burtTime) + (waitTime)
+            turnAroundTime[i] = queue[i].cpuTime + queue[i].waittime;
+            avgTurnArnd += turnAroundTime[i];
+        }
+    avgWait = avgWait / (numOfProc - 1);
+    avgTurnArnd = avgTurnArnd / numOfProc;
+    printf("Average waiting time: %f\nAverage response time: \nAverage CPU usage: \n", avgWait);
 }
 
 /**
  * psjf() - Simulates the premptive shortest job first CPU scheduling method
  */
+
 void psjf(int numOfProc, struct process proc[]){
-        //PSJF from the website!!!    
-      int arrival_time[numOfProc], burst_time[numOfProc], temp[numOfProc];
-      int i, smallest;
-      int count = 0; 
-      int time;//, limit;
-      int limit = numOfProc;
-      double wait_time = 0, turnaround_time = 0, end;
-      float average_waiting_time, average_turnaround_time;
-      double totalBurstTimes;
-      //printf("\nEnter the Total Number of Processes:\t");
-      //scanf("%d", &limit); 
-      //printf("\nEnter Details of %d Processes\n", limit);
-      for(i = 0; i < limit; i++)
-      {
-            //printf("\nEnter Arrival Time:\t");
-            //scanf("%d", &arrival_time[i]);
-            //printf("Enter Burst Time:\t");
-            //scanf("%d", &burst_time[i]); 
-            //temp[i] = burst_time[i];
-            arrival_time[i] = proc[i].arrTime;
-            burst_time[i] = proc[i].cpuTime;
-	    totalBurstTimes = totalBurstTimes + proc[i].cpuTime;
-      }
-      burst_time[9] = 9999;  
-      for(time = 0; count != limit; time++)
-      {
-            smallest = 9;
-            for(i = 0; i < limit; i++)
+    int burstTime [10];
+    int count = 0;
+    //Executing psjf
+    burstTime[9] = 9999;
+    for(TIME = 0; count != limit; TIME++)
+    {
+        smallestProcess =9;
+        for(int i=0; i<limit; i++)
+        {
+            if(arrivalTime[i] <= TIME && burstTime[i] < burstTime[smallestProcess] && burstTime[i]>0)
             {
-                  if(arrival_time[i] <= time && burst_time[i] < burst_time[smallest] && burst_time[i] > 0)
-                  {
-                        smallest = i;
-                  }
+                smallestProcess = i;
             }
-            burst_time[smallest]--;
-            if(burst_time[smallest] == 0)
-            {
-                  count++;
-                  end = time + 1;
-                  wait_time = wait_time + end - arrival_time[smallest] - temp[smallest];
-                  turnaround_time = turnaround_time + end - arrival_time[smallest];
-            }
-      }
-      average_waiting_time = wait_time / limit; 
-      average_turnaround_time = turnaround_time / limit;
-      printf("\n\nAverage Waiting Time:\t%lf\n", average_waiting_time);
-      printf("\n Avgerage reponse time is: %d\n", reponseTime(totalBurstTimes, wait_time,limit ));
-      printf("\nCpu usage time: %d\n", cpuTime(totalBurstTimes, TIME ));
-      //return 0; 
+        }
+        burstTime[smallestProcess]--;
+        if(burstTime[smallestProcess] == 0)
+        {
+            count++;
+            end = time +1;
+            waitTime = waitTime + end - arrivalTime[smallestProcess] - temp[smallestProcess];
+            turnAroundTime = turnAroundTime + end - arrivalTime[smallestProcess];
+        }
+    }
+    //figuring out average wait times and turn around time
+    avgWaitingTime = waitTime / limit;
+    avgTurnAroundTime = turnAroundTime / limit;
+    printf("\n\nAverage Waiting Timme: \t%lf\n", avgWaitingTime);
+    printf("Average Turnaround Time: \t%lf\n", avgTurnAroundTime);
 }
-double cpuTime(int totalBurstTimes, int overAllTime)
-{
-    double cpuTime = totalBustTimes/ overAllTime;
-    double ans     = cpuTime *100;
-    return ans;
-}
-double responeTime(int totalBurstTimes, int totalWaitTimes, int totalNumberOfProcesses)
-{
-    double avgReponseTime = ((totalBurstTimes) + (totalWaitTimes))/ totalNumberOfProcesses;
-    return avgResponseTime;
-}
-}
-
-
