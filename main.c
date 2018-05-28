@@ -4,7 +4,7 @@
 //
 //  Created by Bailey Modlin, and Matthew Featherston on 11/7/17.
 //
-//  This program is designed to simulate thre CPU scheduling techniques (first come first serve, round robin, and preemptive shortest job first).
+//  This program is designed to simulate three CPU scheduling techniques (first come first serve, round robin, and preemptive shortest job first).
 //
 
 #include <stdio.h>
